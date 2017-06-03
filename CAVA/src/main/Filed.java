@@ -10,40 +10,40 @@ import java.util.*;
 public class Filed extends JFrame {
 	private MapPanel mapGUI; // map GUI
 	
-	// ì•ìœ¼ë¡œ í™œìš©ë  ëª¬ìŠ¤í„° ìœ„ì¹˜, ìë™ì°¨ ìœ„ì¹˜ ê¸°ë¡ìš©
+	// ¾ÕÀ¸·Î È°¿ëµÉ ¸ó½ºÅÍ À§Ä¡, ÀÚµ¿Â÷ À§Ä¡ ±â·Ï¿ë
 	
-	private Car usercar; // ì–˜ëŠ” ì‰˜ë¡œ ì¹´í”¼ ë•Œë ¤ë²„ë¦¬ì.
-	// êµ³ì´ ì´ì°¨ì› ì–´ë ˆì´ë¦¬ìŠ¤íŠ¸ë¡œ ì¡ëŠ” ì´ìœ ëŠ” ì¸ë±ìŠ¤ 1ì€ ìˆ², ì¸ë±ìŠ¤ 2ì€ ì‚°, ì¸ë±ìŠ¤ 3ì„ ì§€ì˜¥ ìŠ¤í…Œì´ì§€ë¡œ ì¡ê¸° ìœ„í•¨ì´ë‹¤.
-	private ArrayList<ArrayList<Maps> > map; // ì–˜ëŠ” ë”¥ì¹´í”¼ ë•Œë ¤ì•¼í•œë‹¤. íŒŒì¼ I/Oë¡œ ê´€ë¦¬í•  ê²ƒì´ë‹¤.
+	private Car usercar; // ¾ê´Â ½©·Î Ä«ÇÇ ¶§·Á¹ö¸®ÀÚ.
+	// ±»ÀÌ ÀÌÂ÷¿ø ¾î·¹ÀÌ¸®½ºÆ®·Î Àâ´Â ÀÌÀ¯´Â ÀÎµ¦½º 1Àº ½£, ÀÎµ¦½º 2Àº »ê, ÀÎµ¦½º 3À» Áö¿Á ½ºÅ×ÀÌÁö·Î Àâ±â À§ÇÔÀÌ´Ù.
+	private ArrayList<ArrayList<Maps> > map; // ¾ê´Â µöÄ«ÇÇ ¶§·Á¾ßÇÑ´Ù. ÆÄÀÏ I/O·Î °ü¸®ÇÒ °ÍÀÌ´Ù.
 	
-	// ì •ë³´ ë³´ê´€ìš©
-	private ArrayList<Item> item;
-	private ArrayList<Monster> monster;
-	private ArrayList<Trap> trap;
-	private ArrayList<Tooltip> tooltip;
+	// Á¤º¸ º¸°ü¿ë
+//	private ArrayList<Item> item;
+//	private ArrayList<Monster> monster;
+//	private ArrayList<Trap> trap;
+//	private ArrayList<Tooltip> tooltip;
 	
 	public Filed() {
 		setTitle("Cava");
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		usercar = new Car(); // Save/Load ê¸°ëŠ¥ì´ êµ¬í˜„ ì•ˆí•œë‹¤ë©´ ëŠ˜ ìƒˆë¡œìš´ ìë™ì°¨ë¥¼ ìƒ
-		// mapì€ íŒŒì¼ ë¶ˆëŸ¬ì˜¤ëŠ” ê³¼ì •ì—ì„œ ì´ˆê¸°í™” í• ê²ƒ
+		usercar = new Car(); // Save/Load ±â´ÉÀÌ ±¸Çö ¾ÈÇÑ´Ù¸é ´Ã »õ·Î¿î ÀÚµ¿Â÷¸¦ »ı
+		// mapÀº ÆÄÀÏ ºÒ·¯¿À´Â °úÁ¤¿¡¼­ ÃÊ±âÈ­ ÇÒ°Í
 		
 		ArrayList<Integer> k = new ArrayList<Integer>();
 		
-		// ë§µì˜ ìµœì´ˆ ì‹œì‘ì§€ì ì€ 0ì˜ 0, íŠœí† ë¦¬ì–¼
-		mapGUI = new MapPanel(usercar, map.get(0).get(0));
+		// ¸ÊÀÇ ÃÖÃÊ ½ÃÀÛÁöÁ¡Àº 0ÀÇ 0, Æ©Åä¸®¾ó
+		mapGUI = new MapPanel(map.get(0).get(0), usercar);
 		add(mapGUI);
 		
-		this.setSize(1000, 1000);
+		this.setSize(800, 600);
         setResizable(false);
 
 		this.setVisible(true);
 	}
 	public static void main(String[] args) {
-		// ì£¼ì˜. í•„ë“œ ìƒì„± ì „ì— ë©”ì¸í•¨ìˆ˜ì—ì„œ íŒŒì¼ ë¶ˆëŸ¬ì˜¤ëŠ” í•¨ìˆ˜ë¥¼ "ë°˜ë“œì‹œ" ì‹¤í–‰í•  ê²ƒ
+		// ÁÖÀÇ. ÇÊµå »ı¼º Àü¿¡ ¸ŞÀÎÇÔ¼ö¿¡¼­ ÆÄÀÏ ºÒ·¯¿À´Â ÇÔ¼ö¸¦ "¹İµå½Ã" ½ÇÇàÇÒ °Í
 		
-		// í•„ë“œ ìƒì„±
+		// ÇÊµå »ı¼º
 		Filed frame = new Filed();
 	}
 }
