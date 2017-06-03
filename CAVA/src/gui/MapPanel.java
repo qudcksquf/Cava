@@ -6,15 +6,23 @@ import mapinfo.*;
 import java.awt.event.*;
 import java.awt.*;
 import javax.swing.*;
+
 public class MapPanel extends JPanel implements ActionListener{
 	private Car car;
 	private Maps map;
     private Timer timer;
     private final int DELAY = 20;
     
-    public MapPanel(Maps map, Car car) {
+    public MapPanel(Car car, Maps map) {
     	this.car = car;
     	this.map = map;
+
+		setBackground(Color.WHITE);
+		addKeyListener(new TAdapter());
+		setFocusable(true);
+
+        timer = new Timer(DELAY, this);
+        timer.start(); 
     }
 	public MapPanel() {
 		setBackground(Color.WHITE);
@@ -43,7 +51,9 @@ public class MapPanel extends JPanel implements ActionListener{
 	
 	private void doDrawing(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
-        g2d.drawImage(car.getImage(), car.getX(), car.getY(), 40, 20, this);        
+        g2d.drawImage(car.getImage(), car.getX(), car.getY(), 58, 29, this);
+        for(Monster v : map.getMonster()) {
+        }
     }
 	
 	private class TAdapter extends KeyAdapter {

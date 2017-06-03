@@ -19,12 +19,12 @@ public class Car {
 		dy = 0;
 		speed = 7;
 		moving = false;
-		image = new ImageIcon("images.jpg").getImage();
+		image = new ImageIcon("car.jpg").getImage();
 	}
 	public void move() {
 		if(!moving) return;
-		if(x + dx >= 0 && x + dx <= 960) x += dx;
-		if(y + dy >= 0 && y + dy <= 980) y += dy;
+		if(x + dx >= 0 && x + dx <= 542) x += dx;
+		if(y + dy >= 0 && y + dy <= 571) y += dy;
 	}
 	public Image getImage() {
 		return image;
