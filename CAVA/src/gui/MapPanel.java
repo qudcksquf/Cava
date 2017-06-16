@@ -1,49 +1,59 @@
 package gui;
 
 import playable.*;
+import playable.component.AdvancedEngine;
+import playable.component.VantageEngine;
 import objects.*;
 import mapinfo.*;
+
 import java.awt.event.*;
 import java.awt.*;
+import java.util.ArrayList;
+
 import javax.swing.*;
 
-<<<<<<< HEAD
-public class MapPanel extends JPanel implements ActionListener{
-	private Car car;
-	private Maps map;
-    private Timer timer;
-    private final int DELAY = 20;
-    
-    public MapPanel(Car car, Maps map) {
-    	this.car = car;
-    	this.map = map;
+import main.Music;
 
-		setBackground(Color.WHITE);
-		addKeyListener(new TAdapter());
-		setFocusable(true);
-
-        timer = new Timer(DELAY, this);
-        timer.start(); 
-    }
-=======
 public class MapPanel extends JPanel implements ActionListener {
 	private Car car;
-	private Maps map = new Maps();
+	private ArrayList<Image> imageInfo;
+	private Image[] carImage;
+	private Image[] blockImage;
+	private Maps map;
 	private Timer timer;
-	private final int DELAY = 20;
+	private final int DELAY = 10;
+	private final int tileSize = 20;
 
-	public MapPanel(Maps map, Car car) {
+	public MapPanel(Maps map, Car car, ArrayList<Image> imageInfo) {
 		this.car = car;
 		this.map = map;
-	}
+		this.car.setMap(map);
 
->>>>>>> fe41512c2bf7eb4f2a7bc415ebda1d6f02350997
-	public MapPanel() {
+		carImage = new Image[8];
+		String[] arr = { "right", "left", "up", "down" };
+		for (int i = 0; i < 4; i++) {
+			carImage[i] = new ImageIcon("Image/" + "car_" + arr[i] + "(normal).png").getImage();
+			carImage[i + 4] = new ImageIcon("Image/" + "car_" + arr[i] + "(booster).png").getImage();
+		}
+
+		blockImage = new Image[9];
+
+		blockImage[0] = imageInfo.get(8); // background
+		blockImage[1] = imageInfo.get(7); // wall
+
+		blockImage[2] = imageInfo.get(5); // portal
+		blockImage[3] = imageInfo.get(6); // wizard
+		blockImage[4] = imageInfo.get(0); // engine or item
+		blockImage[5] = imageInfo.get(13); // oil
+		blockImage[6] = imageInfo.get(14); // kit
+		blockImage[7] = imageInfo.get(4); // trap
+		blockImage[8] = imageInfo.get(16); // carcenter
+
+		this.imageInfo = imageInfo;
+
 		setBackground(Color.WHITE);
 		addKeyListener(new TAdapter());
 		setFocusable(true);
-
-		car = new Car();
 
 		timer = new Timer(DELAY, this);
 		timer.start();
@@ -52,15 +62,152 @@ public class MapPanel extends JPanel implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		car.move();
+
+		if (car.getEngine().isBooster()) {
+			if (car.getTire().getDx() == 1)
+				car.setImage(carImage[4]);
+			if (car.getTire().getDx() == -1)
+				car.setImage(carImage[5]);
+			if (car.getTire().getDy() == -1)
+				car.setImage(carImage[6]);
+			if (car.getTire().getDy() == 1)
+				car.setImage(carImage[7]);
+		} else {
+			if (car.getTire().getDx() == 1)
+				car.setImage(carImage[0]);
+			if (car.getTire().getDx() == -1)
+				car.setImage(carImage[1]);
+			if (car.getTire().getDy() == -1)
+				car.setImage(carImage[2]);
+			if (car.getTire().getDy() == 1)
+				car.setImage(carImage[3]);
+		}
+
+		int x = car.getX();
+		int y = car.getY();
+		if (car.getMap().getMonsters() != null) {
+			ArrayList<Monster> deadThings = new ArrayList<Monster>();
+			for (Monster m : car.getMap().getMonsters()) {
+				// meets monster
+				if (m.getX() == x && m.getY() == y) {
+					int carHP = car.getStatus().getHp().getValue();
+					// Booster on
+					if (car.getEngine().isBooster()) {
+						deadThings.add(m);
+						continue;
+					}
+					// Booster off
+					else {
+						if (carHP - m.getDamage() <= 0) {
+							car.getStatus().getHp().setValue(0);
+							JOptionPane.showMessageDialog(null, "Car is broken!", "Game Over",
+									JOptionPane.WARNING_MESSAGE);
+							System.exit(0);
+						} else {
+							car.getStatus().getHp().setValue(carHP - m.getDamage());
+						}
+					}
+				}
+
+				// monster moving, special action
+				m.move(car);
+				if (m instanceof Monster1) {
+					((Monster1) m).boostCountDown();
+					((Monster1) m).boostDelayDown();
+					((Monster1) m).hasBooster();
+				}
+				if (m instanceof Monster2) {
+					((Monster2) m).shoot();
+				}
+				if (m instanceof FireBall) {
+					if ((map.getTile())[m.getY() + m.getDy()][m.getX() + m.getDx()] == 1) {
+						deadThings.add(m);
+					}
+				}
+			}
+			for (Monster m : deadThings) {
+				car.getMap().getMonsters().remove(m);
+			}
+			for (FireBall fb : map.getAddingFireBalls()) {
+				map.getMonsters().add(fb);
+			}
+			map.getAddingFireBalls().clear();
+		}
 		
+		// event with the tiles
+		int tileNumber = map.getTile()[y][x];
+		// When the car meets portal
+		if (tileNumber == 2) {
+			map = map.getNorth();
+			car.setMap(map);
+			car.setX(15);
+			car.setY(20);
+		} else if (tileNumber == 3) {
+			map = map.getSouth();
+			car.setMap(map);
+			car.setX(15);
+			car.setY(4);
+		} else if (tileNumber == 4) {
+			map = map.getWest();
+			car.setMap(map);
+			car.setX(25);
+			car.setY(12);
+		} else if (tileNumber == 5) {
+			map = map.getEast();
+			car.setMap(map);
+			car.setX(4);
+			car.setY(12);
+		}
+
+		// When the car meets wizard
+		if (tileNumber == 6) {
+			//stage 2
+			if (map.getStage() == 2) {
+				Music.drive(false);
+				JOptionPane.showMessageDialog(MapPanel.this, "Finished", "Congratulation!",
+						JOptionPane.INFORMATION_MESSAGE);
+				System.exit(0);
+			} 
+			//stage 0 or stage 1
+			else {
+				// whether the player change the engine
+				boolean equipped = false;
+				if (map.getStage() == 0 && car.getEngine() instanceof VantageEngine)
+					equipped = true;
+				if (map.getStage() == 1 && car.getEngine() instanceof AdvancedEngine)
+					equipped = true;
+
+				if(equipped == true) {
+					Music.drive(false);
+					JOptionPane.showMessageDialog(MapPanel.this,
+							"Yes, this is a new engine which is new object.\n"
+							+ "You have different engine but almost same.\n"
+							+ "This called polymorphism!\n",
+							"Wizard", JOptionPane.OK_OPTION);
+					
+					// move to the next stage
+					Music.offBGM();
+					Music.changeBGM("BGM/" + "stage" + (map.getStage() + 1) + ".wav");
+					map.setStage(map.getStage() + 1);
+					map = map.getEast();
+					car.setMap(map);
+					car.setX(4);
+					car.setY(12);
+
+					blockImage[0] = imageInfo.get(8 + map.getStage() * 2); // background
+					blockImage[1] = imageInfo.get(7 + map.getStage() * 2); // wall
+				}
+			}
+		}
 		repaint();
-		
 	}
 
-	@Override
-	public Dimension getPreferredSize() {
-		
-		return new Dimension(600,500);
+	public Timer getTimer() {
+		return timer;
+	}
+
+	public void setTimer(Timer timer) {
+		this.timer = timer;
 	}
 
 	@Override
@@ -70,75 +217,55 @@ public class MapPanel extends JPanel implements ActionListener {
 	}
 
 	private void doDrawing(Graphics g) {
-<<<<<<< HEAD
-        Graphics2D g2d = (Graphics2D) g;
-        g2d.drawImage(car.getImage(), car.getX(), car.getY(), 58, 29, this);
-        for(Monster v : map.getMonster()) {
-        }
-    }
-	
-	private class TAdapter extends KeyAdapter {
-=======
 		Graphics2D g2d = (Graphics2D) g;
->>>>>>> fe41512c2bf7eb4f2a7bc415ebda1d6f02350997
-		
 
-		if(map.map1 == true) {
-			if(map.Map[car.getY()/map.tile_size][car.getX()/map.tile_size] == 2) {
-				map.map1 = !map.map1; 
-				map.map2 = !map.map2;
-				car.setX(51);
-			}
-		int i, j;
-		int tx, ty;
-		ty = map.start_tile_y;
-		for (i = map.start_tile_y; i < map.end_tile_y; i++) {
-			tx = map.start_tile_x;
-			for (j = map.start_tile_x; j < map.end_tile_x; j++) {
-				if (map.Map[i][j] == 1)
-					g2d.drawImage(map.back_block, tx, ty, tx+map.tile_size, ty+map.tile_size, null);
-				else if (map.Map[i][j] == 2)
-					g2d.drawImage(map.item, tx, ty, tx+map.tile_size, ty+map.tile_size, null);
-				else if (map.Map[i][j] == 0)
-					g2d.drawImage(map.back_blank, tx, ty, tx+map.tile_size, ty+map.tile_size, null);
+		for (int a = 0; a < 30; a++) // background
+			for (int b = 0; b < 25; b++)
+				g2d.drawImage(blockImage[0], a * tileSize, b * tileSize, tileSize, tileSize, null);
 
-				tx += map.tile_size;
-			}
-			ty += map.tile_size;
-		}
-		
-		g2d.drawImage(car.getImage(), car.getX(), car.getY(), 50, 50, null);
-	}
-		else if(map.map2 == true) {
-			if(map.Map2[car.getY()/map.tile_size][car.getX()/map.tile_size] == 1) {
-				map.map1 = !map.map1; 
-				map.map2 = !map.map2;
-				car.setX(549);
-			}
-			int i, j;
-			int tx, ty;
-			ty = map.start_tile_y;
-			for (i = map.start_tile_y; i < map.end_tile_y; i++) {
-				tx = map.start_tile_x;
-				for (j = map.start_tile_x; j < map.end_tile_x; j++) {
-					if (map.Map2[i][j] == 1)
-						g2d.drawImage(map.back_block, tx, ty, tx+map.tile_size, ty+map.tile_size, null);
-					else if (map.Map2[i][j] == 2)
-						g2d.drawImage(map.item, tx, ty, tx+map.tile_size, ty+map.tile_size, null);
-					else if (map.Map2[i][j] == 0)
-						g2d.drawImage(map.back_blank, tx, ty, tx+map.tile_size, ty+map.tile_size, null);
+		// where carcenter is drawn
+		boolean cflag = false;
+		for (int i = 0; i < 30; i++) {
+			for (int j = 0; j < 25; j++) {
+				int tileNumber = map.getTile()[j][i];
 
-					tx += map.tile_size;
+				if (tileNumber > 11)
+					continue;
+				if (tileNumber == 1) // wall
+					g2d.drawImage(blockImage[1], i * tileSize, j * tileSize, tileSize, tileSize, null);
+				else if (tileNumber >= 2 && tileNumber <= 5) // portal
+					g2d.drawImage(blockImage[2], i * tileSize, j * tileSize, tileSize, tileSize, null);
+				else if (tileNumber >= 6 && tileNumber < 11) // wizard, engine,
+																// oil, kit
+					g2d.drawImage(blockImage[tileNumber - 3], i * tileSize, j * tileSize, tileSize, tileSize, null);
+				// carcenter
+				else if (tileNumber == 11 && !cflag) {
+					g2d.drawImage(blockImage[tileNumber - 3], i * tileSize, j * tileSize, tileSize * 3, tileSize * 3,
+							null);
+					cflag = true;
 				}
-				ty += map.tile_size;
 			}
-			
-			g2d.drawImage(car.getImage(), car.getX(), car.getY(), 50, 50, null);
 		}
+
+		if (map.getMonsters() != null) {
+			for (Monster m : map.getMonsters()) {
+				g2d.drawImage(imageInfo.get(m.getSeed()), m.getX() * tileSize, m.getY() * tileSize, tileSize, tileSize,
+						null);
+			}
+		}
+
+		g2d.drawImage(car.getImage(), car.getX() * tileSize, car.getY() * tileSize, tileSize, tileSize, null);
+	}
+
+	public Car getCar() {
+		return car;
+	}
+
+	public void setCar(Car car) {
+		this.car = car;
 	}
 
 	private class TAdapter extends KeyAdapter {
-
 		@Override
 		public void keyReleased(KeyEvent e) {
 			car.keyReleased(e);

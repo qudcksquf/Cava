@@ -1,1 +1,4 @@
 1496475628990	Rename type 'Filed'
+1496486056080	Rename type 'Filed'
+1496490249123	Encapsulate field 'speed'
+1496490255248	Encapsulate field 'is_booster'

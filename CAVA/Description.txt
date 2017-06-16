@@ -1,0 +1,52 @@
+@English Description
+
+* Java jre installation required to run games
+Address: https://www.java.com/en/download/manual.jsp
+
+*Manual
+Direction key: Set direction to move
+Spacebar (Pressed): Move in the direction you set
+Control key: Booster (speed increase and monster hunting possible)
+Z key: use skill
+-BasicEngine: No Skill
+-VantageEngine: Restores health (with delay)
+-AdvancedEngine: Health recovery + Trap out condition
+
+* Simple game description
+There are three stages, each of which is equipped with an item (engine) at each stage, 
+mounted at the car center in the central map, and then passed to the next stage when the witch is found.
+There is an oil in the middle of the map, a kit for recovery of physical strength, and an item. 
+You just have to eat as much as you want to eat properly.
+The car center in the central map does not have any items, but heal the car if it is defeated (Hp recovery).
+If you do not satisfy the game over condition or the game clear condition, 
+and you turn off the game in the middle, the start screen reappears.
+Traps and monsters appear in the middle of the map, and the traps will lose 
+their health at the same time as you step on them, and the direction keys will operate in reverse.
+Also, if the monster is hit, the blood will be cut at a certain rate.
+
+* Status window description on the left
+1) Equipped: Currently installed engine
+2) Stored: Currently acquired engine (Mounting X)
+3) Speed: The current speed of the car (the smaller the number, the faster)
+4) Booster: On when the booster is on, Off when it is off
+5) Confused!: Trap caught in state
+
+* Game over condition
+1. When oil gauge goes to zero
+2. When Hp becomes 0
+
+* Game clear condition
+When you meet the witch of the last stage
+
+* End of program
+If you do Game over or Game clear, the program will terminate.
+
+* Monster Description
+Blue Snail: A cute blue snail crawling in the woods.
+
+Orange mushroom: Cute mushroom living in a mountain. 
+		If you find the enemy while you are normally cool, you will quickly come up with a booster.
+		Be careful because damage is stronger than you think.
+
+Balrog: A terrible Balrog who plagues players in Hell. Damage is enormous, and sometimes the fireball is blown.
+		But if you use a booster, you can ignore the damage of the fireball, so do not be too scared.

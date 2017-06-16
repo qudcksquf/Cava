@@ -1,77 +1,310 @@
 package playable;
 
 import java.awt.Image;
-import java.awt.event.KeyEvent;
-import javax.swing.ImageIcon;
 
+
+import java.awt.event.KeyEvent;
+
+import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
+
+import main.Music;
 import mapinfo.Maps;
+import playable.component.*;
 
 public class Car {
-	private int dx;
-	private int dy;
+	private Engine engine;
+	private Tire tire;
 	private int x;
 	private int y;
-	Maps map = new Maps();
-	
-	private int speed;
-	private boolean moving;
+	private Maps map = new Maps();
+
 	private Image image;
+
+	private Status2 status;
+	private Status1 inventory;
+	
 	public Car() {
-		x = 0;
-		y = 0;
-		dx = 0;
-		dy = 0;
-		speed = 10;
-		moving = false;
-<<<<<<< HEAD
-		image = new ImageIcon("car.jpg").getImage();
+		x = 2;
+		y = 2;
+		engine = new BasicEngine();
+		tire = new Tire();
+		image = new ImageIcon("Image/" + "car_right(normal).png").getImage();
+		status = new Status2();
+		inventory = new Status1();
 	}
-	public void move() {
-		if(!moving) return;
-		if(x + dx >= 0 && x + dx <= 542) x += dx;
-		if(y + dy >= 0 && y + dy <= 571) y += dy;
-=======
-		image = new ImageIcon("car.png").getImage();
+
+	public void setImage(Image image) {
+		this.image = image;
 	}
-	public void move() {
-		if(!moving) return;
-		
-		if(x + dx > 0 && x + dx < 600) x += dx;
-		if(y + dy > 0 && y + dy < 500) y += dy;
->>>>>>> fe41512c2bf7eb4f2a7bc415ebda1d6f02350997
-	}
+
 	public Image getImage() {
 		return image;
 	}
-	public void setX(int idx) {
-		this.x = idx;
+
+	public void setX(int x) {
+		this.x = x;
 	}
-	public void setY(int idy) {
-		this.y = idy;
-	}
-	public int getX() {
+
+	public Integer getX() {
 		return x;
 	}
-	public int getY() {
+
+	public void setY(int y) {
+		this.y = y;
+	}
+
+	public Integer getY() {
 		return y;
 	}
-	// 遺��뒪�꽣 異붽��븷 �삁�젙
+
+	public Engine getEngine() {
+		return engine;
+	}
+
+	public void setEngine(Engine engine) {
+		this.engine = engine;
+	}
+
+	public Tire getTire() {
+		return tire;
+	}
+
+	public void setTire(Tire tire) {
+		this.tire = tire;
+	}
+
+	public void move() {
+		Music.drive(engine.isMoving());
+		
+		engine.boostDelayDown(status);
+		engine.boostCountDown();
+		if(engine instanceof VantageEngine)
+			((VantageEngine)engine).skillDelayDown(status);
+		else if(engine instanceof AdvancedEngine)
+			((AdvancedEngine)engine).skillDelayDown(status);
+		
+		tire.trapDown();
+		
+		// Inventory Label setting
+		inventory.getSpeedLabel().setText(Integer.toString(engine.getSpeed()));
+		inventory.getConfuseLabel().setVisible(tire.isTrapped());
+		if(engine.isBooster())
+			inventory.getBoosterLabel().setText("On");
+		else
+			inventory.getBoosterLabel().setText("Off");
+		
+		if (engine.getMove()) {
+			int nextX = x + tire.getDx();
+			int nextY = y + tire.getDy();
+			int tileNumber = map.getTile()[nextY][nextX];
+
+			// When the car meets wall
+			if (tileNumber == 1)
+				return;
+
+			// meets wizard
+			if (tileNumber == 6) {
+				if (map.getStage() != 2) {
+					// whether the player change the engine
+					boolean equipped = false;
+					if (map.getStage() == 0 && engine instanceof VantageEngine)
+						equipped = true;
+					if (map.getStage() == 1 && engine instanceof AdvancedEngine)
+						equipped = true;
+
+					Music.drive(false);
+					// when the player don't change the engine
+					if (equipped == false && engine.isMoving() == true) {
+						JOptionPane.showMessageDialog(null,
+								"You have old engine.\nEngine is an object.\n"
+								+ "You must change your engine(object).\n"
+								+ "Go away!, and take a new object! ",
+								"Wizard", JOptionPane.WARNING_MESSAGE);
+					}
+					engine.setMoving(false);
+				}
+			}
+
+			int currentOilGauge = status.getOilgauge().getValue();
+			int currentHP = status.getHp().getValue();
+			// meets oil
+			if (tileNumber == 8) {
+				Music.oil();
+				if (currentOilGauge + 120 >= status.getOilgauge().getMaximum())
+					status.getOilgauge().setValue(status.getOilgauge().getMaximum());
+				else
+					status.getOilgauge().setValue(currentOilGauge + 120);
+				map.getTile()[nextY][nextX] = 0;
+			}
+
+			// meets kit
+			else if (tileNumber == 9) {
+				Music.kit();
+				if (currentHP + 50 >= status.getHp().getMaximum())
+					status.getHp().setValue(status.getHp().getMaximum());
+				else
+					status.getHp().setValue(currentHP + 50);
+				map.getTile()[nextY][nextX] = 0;
+			}
+
+			// meets trap
+			else if (tileNumber == 10) {
+				if (currentHP - 30 <= 0) {
+					JOptionPane.showMessageDialog(null, "Car is broken!", "Game Over", JOptionPane.WARNING_MESSAGE);
+					System.exit(0);
+				} else
+					status.getHp().setValue(currentHP - 30);
+
+				tire.hasTrap();
+			}
+			
+			
+			// When the car meets carcenter
+			if (tileNumber == 11) {
+				Engine storedEngine = inventory.getStoredEngine();
+				if (storedEngine != null) {
+					Music.drive(false);
+					Music.carcenterZero();
+					JOptionPane.showMessageDialog(null, "Inheritance!\n"
+							+ "Engine inherits BasicEngine, VantageEngine and AdvencedEngine.\n"
+							+ "They inherits instance variables and some methods.\n"
+							+ "But there are new skill in VantageEngine and AdvencedEngine.\n"
+							+ "Now you have a new method.\n"
+							+ "If you press 'Z', you can use skill.\n",
+							"Garbage Collector", JOptionPane.YES_OPTION);
+					engine = storedEngine;
+					inventory.getEquippedLabel().setText(engine.getClass().getSimpleName());
+					
+					inventory.setStoredEngine(null);
+					inventory.getStoredLabel().setText("Empty");
+					if (storedEngine instanceof VantageEngine){
+						// skill이 생김
+						status.getSkillDelay().setVisible(true);
+						status.getLblSkillDelay().setVisible(true);
+						status.getSkillDelay().setMaximum(3000);
+						status.getDelayPB().setMaximum(900);
+					}
+					else if (storedEngine instanceof AdvancedEngine){
+						status.getSkillDelay().setMaximum(2000);
+						status.getDelayPB().setMaximum(800);
+					}
+					status.getSkillDelay().setValue(0);
+					status.getDelayPB().setValue(0);
+					status.getOilgauge().setValue(status.getOilgauge().getMaximum());
+
+					Music.drive(engine.isMoving());
+				} else {
+					if (status.getHp().getValue() != status.getHp().getMaximum()) {
+						Music.carcenterOne();
+						Music.drive(false);
+						JOptionPane.showMessageDialog(null, "So far, do you understand about OOP?\n"
+								+ "You move the car, change the direction to arrive here. \n"
+								+ "You may eat oil, kit. \n"
+								+ "All of these OOP. \n"
+								+ "Car = class, oil, kit = car's instance variable, \n"
+								+ "move&change direction = car's method.",
+								"Garbage Collector",
+								JOptionPane.YES_OPTION);
+						Music.drive(engine.isMoving());
+						engine.setMoving(false);
+					}
+				}
+				status.getHp().setValue(status.getHp().getMaximum());
+			}
+			
+			currentOilGauge = status.getOilgauge().getValue();
+			// When oilgauge is 0, game over
+			if (currentOilGauge - engine.getUseOil() <= 0) {
+				JOptionPane.showMessageDialog(null, "The oil has run out!", "Game Over", JOptionPane.WARNING_MESSAGE);
+				System.exit(0);
+			}
+			status.getOilgauge().setValue(currentOilGauge - engine.getUseOil());
+			
+
+			// meets item (engine)
+			if (tileNumber == 7) {
+				int stage = map.getStage();
+				Music.getItem();
+				if (stage == 0) {
+					inventory.setStoredEngine(new VantageEngine());
+					inventory.getStoredLabel().setText("VantageEngine");
+				} else if (stage == 1) {
+					inventory.setStoredEngine(new AdvancedEngine());
+					inventory.getStoredLabel().setText("AdvancedEngine");
+				}
+				map.getTile()[nextY][nextX] = 0;
+			}
+
+			x += tire.getDx();
+			y += tire.getDy();
+		}
+
+	}
+
 	public void keyReleased(KeyEvent e) {
 		int key = e.getKeyCode();
-		if(key == KeyEvent.VK_UP) dy = 0;
-		if(key == KeyEvent.VK_DOWN) dy = 0;
-		if(key == KeyEvent.VK_LEFT) dx = 0;
-		if(key == KeyEvent.VK_RIGHT) dx = 0;
-		if(key == KeyEvent.VK_SPACE) moving = false;
+		if (key == KeyEvent.VK_SPACE) {
+			engine.setMoving(false);
+		}
 	}
+
 	public void keyPressed(KeyEvent e) {
 		int key = e.getKeyCode();
-		
-		if(key == KeyEvent.VK_UP) dy = -speed;
-		if(key == KeyEvent.VK_DOWN) dy = speed;
-		if(key == KeyEvent.VK_LEFT) dx = -speed;
-		if(key == KeyEvent.VK_RIGHT) dx = speed;
-		if(key == KeyEvent.VK_SPACE) moving = true;
-		
+
+		if (key == KeyEvent.VK_UP) {
+			tire.setDx(0);
+			tire.setDy(tire.isTrapped() ? 1 : -1);
+		}
+		if (key == KeyEvent.VK_DOWN) {
+			tire.setDx(0);
+			tire.setDy(tire.isTrapped() ? -1 : 1);
+		}
+		if (key == KeyEvent.VK_LEFT) {
+			tire.setDx(tire.isTrapped() ? 1 : -1);
+			tire.setDy(0);
+		}
+		if (key == KeyEvent.VK_RIGHT) {
+			tire.setDx(tire.isTrapped() ? -1 : 1);
+			tire.setDy(0);
+		}
+		if (key == KeyEvent.VK_SPACE) {
+			engine.setMoving(true);
+		}
+		if (key == KeyEvent.VK_CONTROL) {
+			engine.hasBooster(status);
+		}
+		if (key == KeyEvent.VK_Z) {
+			if(engine instanceof VantageEngine) {
+				((VantageEngine)engine).hasSkill(status);
+			}
+			else if(engine instanceof AdvancedEngine) {
+				((AdvancedEngine)engine).hasSkill(status, tire);
+			}
+		}
+	}
+
+	public Maps getMap() {
+		return map;
+	}
+
+	public void setMap(Maps map) {
+		this.map = map;
+	}
+
+	public Status2 getStatus() {
+		return status;
+	}
+
+	public void setStatus(Status2 status) {
+		this.status = status;
+	}
+
+	public Status1 getInventory() {
+		return inventory;
+	}
+
+	public void setInventory(Status1 inventory) {
+		this.inventory = inventory;
 	}
 }
