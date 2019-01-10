@@ -8,7 +8,8 @@ In OOP Class, We will made a education game "Cava".
 - Lee Minki (curyowo@gmail.com)
 - Kim Hyoungho (khh9201@naver.com)
 
-test [^1]: tests
+test [^1]
+[^1]:tests
 
 
 ## Role
