@@ -10,7 +10,7 @@ In OOP Class, We will made a education game "Cava".
 
 test [1]
 
-[1]:#-tests
+[1]:#1-tests
 
 
 ## Role
